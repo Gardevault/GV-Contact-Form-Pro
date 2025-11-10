@@ -1,6 +1,6 @@
-/* === GV Forms Builder 3.0 — Gardevault Unified UI === */
-
-:root {
+/* === GV Forms Builder 3.0 — Gardevault Unified UI (scoped) === */
+.gv-forms-admin {
+  /* theme tokens */
   --gv-bg: #0b1220;
   --gv-surface: #162132;
   --gv-surface-2: #1e2a3d;
@@ -14,10 +14,7 @@
   --gv-font: "Inter", "Segoe UI", system-ui, sans-serif;
   --gv-glass-bg: linear-gradient(180deg, rgba(255, 255, 255, .03), rgba(255, 255, 255, 0));
   --gv-glass-shadow: 0 4px 14px rgba(0, 0, 0, .35), inset 0 0 0 1px rgba(255, 255, 255, .03);
-}
 
-/* === Wrap === */
-.gv-forms-admin {
   background: linear-gradient(180deg, rgba(2, 6, 23, .7), rgba(2, 6, 23, 0)), var(--gv-bg);
   color: var(--gv-text);
   font-family: var(--gv-font);
@@ -27,7 +24,7 @@
 }
 
 /* === Header === */
-.gv-head {
+.gv-forms-admin .gv-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -35,14 +32,14 @@
   padding-bottom: 12px;
   border-bottom: 1px solid var(--gv-border);
 }
-.gv-head h1 {
+.gv-forms-admin .gv-head h1 {
   font-size: 1.7rem;
   font-weight: 800;
   color: white;
   text-shadow: 0 0 8px rgba(0, 0, 0, .6);
   margin: 0;
 }
-.gv-badge {
+.gv-forms-admin .gv-badge {
   background: rgba(14, 165, 233, .1);
   border: 1px solid var(--gv-border);
   padding: 4px 10px;
@@ -53,21 +50,21 @@
 }
 
 /* === Cards === */
-.gv-card {
+.gv-forms-admin .gv-card {
   background: var(--gv-glass-bg), var(--gv-surface);
   border: 1px solid var(--gv-border);
   border-radius: var(--gv-radius);
-  padding: 18px 20px;
+  padding: 10px;
   margin-bottom: 16px;
   box-shadow: var(--gv-glass-shadow);
   transition: border-color .15s ease, box-shadow .15s ease, transform .15s ease;
 }
-.gv-card:hover {
+.gv-forms-admin .gv-card:hover {
   border-color: var(--gv-accent);
   transform: translateY(-1px);
   box-shadow: 0 6px 20px rgba(14, 165, 233, .18), inset 0 0 0 1px rgba(255, 255, 255, .05);
 }
-.gv-card h2 {
+.gv-forms-admin .gv-card h2 {
   font-size: .95rem;
   text-transform: uppercase;
   letter-spacing: .06em;
@@ -77,288 +74,189 @@
   padding-bottom: 6px;
 }
 
+/* Inline row used by Border style + color */
+.gv-forms-admin .gv-row.gv-row-inline{
+  display: grid;
+  grid-template-columns: 130px minmax(160px, 240px) 130px 1fr;
+  gap: 10px 12px;
+  align-items: center;     /* baseline fix */
+}
+
+
 /* === Form Rows & Inputs === */
-.gv-row {
+.gv-forms-admin .gv-row {
   display: flex;
   align-items: center;
   gap: 10px;
   margin-bottom: 10px;
   flex-wrap: wrap;
 }
-.gv-lbl {
+.gv-forms-admin .gv-lbl {
   flex: 0 0 130px;
   font-weight: 600;
   color: var(--gv-muted);
 }
-.gv-row .gv-suffix {
+.gv-forms-admin .gv-row .gv-suffix {
   color: var(--gv-muted);
   font-size: 0.9em;
   font-weight: 500;
 }
 
 /* Unified Input Styles */
-.gv-row input[type="text"],
-.gv-row input[type="number"],
-.gv-row select,
-.gv-form-title-controls input[type="text"] {
+.gv-forms-admin .gv-row input[type="text"],
+.gv-forms-admin .gv-row input[type="number"],
+.gv-forms-admin .gv-row select,
+.gv-forms-admin .gv-form-title-controls input[type="text"] {
   background: linear-gradient(180deg, #0b1321, #0a1020);
   border: 1px solid var(--gv-border);
   color: var(--gv-text);
   border-radius: var(--gv-radius-sm);
-  padding: 7px 10px;
   font-size: 14px;
   transition: border-color .2s ease, box-shadow .2s ease;
   height: 32px;
   box-sizing: border-box;
   margin: 0;
 }
-
-.gv-row input[type="text"]:focus,
-.gv-row input[type="number"]:focus,
-.gv-row select:focus,
-.gv-form-title-controls input[type="text"]:focus {
+.gv-forms-admin .gv-row input[type="text"]:focus,
+.gv-forms-admin .gv-row input[type="number"]:focus,
+.gv-forms-admin .gv-row select:focus,
+.gv-forms-admin .gv-form-title-controls input[type="text"]:focus {
   border-color: var(--gv-accent);
   box-shadow: 0 0 0 3px rgba(56, 189, 248, .18);
   outline: none;
 }
 
 /* Range Slider */
-.gv-row input[type="range"] {
+.gv-forms-admin .gv-row input[type="range"] {
   height: auto;
   border: none;
   padding: 0;
   background: transparent;
   flex-grow: 1;
+  max-width: 10em;
 }
-
+.wp-core-ui select { 
+    -webkit-appearance: auto!important;
+}
 /* Select Dropdown */
-.gv-row select {
-  appearance: none;
-  -webkit-appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%2394a3b8'%3E%3Cpath fill-rule='evenodd' d='M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z' clip-rule='evenodd' /%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 8px center;
-  background-size: 1.2em;
-  padding-right: 28px;
-}
 
-/* WP Color Picker Fixes */
-.gv-row .wp-picker-container,
-.gv-form-title-controls .wp-picker-container {
-    margin: 0; /* Kill default WP margins */
-}
-/* Style the main button <a> tag */
-.gv-row .wp-color-result,
-.gv-form-title-controls .wp-color-result {
-    background: linear-gradient(180deg, #0b1321, #0a1020) !important;
-    border: 1px solid var(--gv-border) !important;
-    border-radius: var(--gv-radius-sm) !important; /* 8px */
-    height: 32px !important; /* Match other inputs */
-    width: auto !important;
-    padding: 0 8px !important;
-    box-shadow: none !important;
-    box-sizing: border-box !important;
-    display: flex !important;
-    align-items: center !important;
-}
-.gv-row .wp-color-result:hover,
-.gv-form-title-controls .wp-color-result:hover {
-    border-color: var(--gv-accent) !important;
-}
-/* Style the "Select Color" text */
-.gv-row .wp-color-result-text,
-.gv-form-title-controls .wp-color-result-text {
-    color: var(--gv-muted) !important;
-    font-size: 14px !important;
-    line-height: 1 !important;
-    padding: 0 0 0 8px !important;
-    height: auto !important;
-    border: none !important;
-    background: transparent !important;
-}
-/* Style the inner color swatch */
-.gv-row .wp-color-result .color-alpha,
-.gv-form-title-controls .wp-color-result .color-alpha {
-    height: 20px !important;
-    width: 20px !important;
-    margin: 0 !important;
-    border-radius: 5px !important;
-    border: none !important;
-}
-/* Hide the ugly hex input and clear button */
-.gv-row .wp-picker-input-wrap,
-.gv-form-title-controls .wp-picker-input-wrap,
-.gv-row .wp-picker-clear,
-.gv-form-title-controls .wp-picker-clear {
-    display: none !important;
-}
-/* === End Color Picker Fixes === */
 
+/* WP Color Picker Fixes (scoped) */
+.gv-forms-admin .gv-row .wp-picker-container,
+.gv-forms-admin .gv-form-title-controls .wp-picker-container { margin: 0; }
+.gv-forms-admin .gv-row .wp-color-result,
+.gv-forms-admin .gv-form-title-controls .wp-color-result {
+  background: linear-gradient(180deg, #0b1321, #0a1020) !important;
+  border: 1px solid var(--gv-border) !important;
+  border-radius: var(--gv-radius-sm) !important;
+  height: 32px !important;
+  width: auto !important;
+  padding: 0 8px !important;
+  box-shadow: none !important;
+  box-sizing: border-box !important;
+  display: flex !important;
+  align-items: center !important;
+}
+.gv-forms-admin .gv-row .wp-color-result:hover,
+.gv-forms-admin .gv-form-title-controls .wp-color-result:hover { border-color: var(--gv-accent) !important; }
+.gv-forms-admin .gv-row .wp-color-result-text,
+.gv-forms-admin .gv-form-title-controls .wp-color-result-text {
+  color: var(--gv-muted) !important;
+  font-size: 14px !important;
+  line-height: 1 !important;
+
+  height: auto !important;
+  border: none !important;
+  background: transparent !important;
+}
+.gv-forms-admin .gv-row .wp-color-result .color-alpha,
+.gv-forms-admin .gv-form-title-controls .wp-color-result .color-alpha {
+  height: 20px !important;
+  width: 20px !important;
+  margin: 0 !important;
+  border-radius: 5px !important;
+  border: none !important;
+}
+.gv-forms-admin .gv-row .wp-picker-input-wrap,
+.gv-forms-admin .gv-form-title-controls .wp-picker-input-wrap,
+.gv-forms-admin .gv-row .wp-picker-clear,
+.gv-forms-admin .gv-form-title-controls .wp-picker-clear { display: none !important; }
 
 /* Checkbox switch */
-.gv-row input[type="checkbox"] {
+.gv-forms-admin .gv-row input[type="checkbox"] {
   appearance: none;
-  width: 44px;
-  height: 22px;
+  width: 44px; height: 22px;
   border-radius: 999px;
   background: #0a1524;
   border: 1px solid var(--gv-border);
   position: relative;
   cursor: pointer;
-  transition: .2s;
-  margin: 0;
+  transition: .2s; margin: 0;
 }
-.gv-row input[type="checkbox"]::after {
-  content: "";
-  position: absolute;
-  top: 2px;
-  left: 2px;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: #0f1a2d;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, .5);
+.gv-forms-admin .gv-row input[type="checkbox"]::after {
+  content: ""; position: absolute; top: 2px; left: 2px;
+  width: 18px; height: 18px; border-radius: 50%;
+  background: #0f1a2d; box-shadow: 0 2px 5px rgba(0,0,0,.5);
   transition: transform .2s;
 }
-.gv-row input[type="checkbox"]:checked {
+.gv-forms-admin .gv-row input[type="checkbox"]:checked {
   background: linear-gradient(180deg, var(--gv-accent), var(--gv-accent-2));
   border-color: transparent;
   box-shadow: 0 0 0 3px rgba(56, 189, 248, .18);
 }
-.gv-row input[type="checkbox"]:checked::after {
-  transform: translateX(22px);
-  background: #082a3a;
-}
+.gv-forms-admin .gv-row input[type="checkbox"]:checked::after { transform: translateX(22px); background: #082a3a; }
 
 /* === Title controls === */
-.gv-form-title-controls {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  align-items: center;
-  margin-top: 10px;
+.gv-forms-admin .gv-form-title-controls {
+  display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 10px;
 }
-.gv-form-title-controls input[type="text"] {
-  flex: 1 1 200px; /* Let the text input take up space but also wrap */
+.gv-forms-admin .gv-form-title-controls input[type="text"] { flex: 1 1 200px; }
+.gv-forms-admin .gv-align {
+  width: 32px; height: 32px; padding: 0; line-height: 30px; text-align: center;
+  font-weight: 700; color: var(--gv-text);
+  background: var(--gv-surface-2); border: 1px solid var(--gv-border);
+  border-radius: 6px; cursor: pointer; transition: .15s;
 }
-.gv-align {
-  width: 32px;
-  height: 32px;
-  padding: 0;
-  line-height: 30px;
-  text-align: center;
-  font-weight: 700;
-  color: var(--gv-text);
-  background: var(--gv-surface-2);
-  border: 1px solid var(--gv-border);
-  border-radius: 6px;
-  cursor: pointer;
-  transition: .15s;
-}
-.gv-align.button-primary {
-  background: var(--gv-accent);
-  border-color: var(--gv-accent);
-  color: #fff;
-}
+.gv-forms-admin .gv-align.button-primary { background: var(--gv-accent); border-color: var(--gv-accent); color: #fff; }
 
 /* === Fields === */
-#gv-field-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-top: 10px;
+.gv-forms-admin #gv-field-list { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+.gv-forms-admin .gv-field {
+  display: flex; align-items: center; gap: .5rem;
+  background: var(--gv-surface-2); border: 1px solid var(--gv-border);
+  border-radius: 10px; padding: .5rem; transition: border-color .2s, box-shadow .2s; flex-wrap: wrap;
 }
-.gv-field {
-  display: flex;
-  align-items: center;
-  gap: .5rem;
-  background: var(--gv-surface-2);
-  border: 1px solid var(--gv-border);
-  border-radius: 10px;
-  padding: .5rem;
-  transition: border-color .2s, box-shadow .2s;
-  flex-wrap: wrap;
+.gv-forms-admin .gv-field:hover { border-color: var(--gv-accent); box-shadow: 0 0 0 3px rgba(56,189,248,.12); }
+.gv-forms-admin .gv-field input, .gv-forms-admin .gv-field select {
+  background: #0b1321; border: 1px solid var(--gv-border); color: var(--gv-text);
+  border-radius: 8px; padding: 6px 8px; flex-grow: 1; flex-basis: 120px;
 }
-.gv-field:hover {
-  border-color: var(--gv-accent);
-  box-shadow: 0 0 0 3px rgba(56, 189, 248, .12);
+.gv-forms-admin .gv-field label { white-space: nowrap; }
+.gv-forms-admin .gv-field .remove {
+  background: rgba(239,68,68,.18); border: 1px solid rgba(239,68,68,.35); color: #fecaca;
+  border-radius: 50%; width: 26px; height: 26px; font-size: 15px; cursor: pointer; transition: background .15s;
+  flex-grow: 0; flex-shrink: 0; flex-basis: 26px;
 }
-.gv-field input,
-.gv-field select {
-  background: #0b1321;
-  border: 1px solid var(--gv-border);
-  color: var(--gv-text);
-  border-radius: 8px;
-  padding: 6px 8px;
-  flex-grow: 1;
-  flex-basis: 120px;
-}
-.gv-field label {
-  white-space: nowrap;
-}
-.gv-field .remove {
-  background: rgba(239, 68, 68, .18);
-  border: 1px solid rgba(239, 68, 68, .35);
-  color: #fecaca;
-  border-radius: 50%;
-  width: 26px;
-  height: 26px;
-  font-size: 15px;
-  cursor: pointer;
-  transition: background .15s;
-  flex-grow: 0;
-  flex-shrink: 0;
-  flex-basis: 26px;
-}
-.gv-field .remove:hover {
-  background: rgba(239, 68, 68, .3);
-}
+.gv-forms-admin .gv-field .remove:hover { background: rgba(239,68,68,.3); }
 
-/* === Buttons === */
-.button-primary {
-  background: var(--gv-accent) !important;
-  color: #fff !important;
-  border: none !important;
-  border-radius: var(--gv-radius-sm) !important;
-  font-weight: 700;
-  padding: 4px 14px !important;
-  height: 32px !important;
-  box-sizing: border-box;
+/* === Buttons (scoped) === */
+.gv-forms-admin .button-primary {
+  background: var(--gv-accent) !important; color: #fff !important; border: none !important;
+  border-radius: var(--gv-radius-sm) !important; font-weight: 700; 
+  height: 32px !important; box-sizing: border-box;
 }
-.button-primary:hover {
-  background: var(--gv-accent-2) !important;
-  box-shadow: 0 0 0 4px rgba(56, 189, 248, .18);
+.gv-forms-admin .button-primary:hover { background: var(--gv-accent-2) !important; box-shadow: 0 0 0 4px rgba(56,189,248,.18); }
+.gv-forms-admin .button {
+  background: var(--gv-surface-2) !important; border: 1px solid var(--gv-border) !important; color: var(--gv-text) !important;
+  border-radius: var(--gv-radius-sm) !important;  height: 32px !important; box-sizing: border-box;
 }
-.button {
-  background: var(--gv-surface-2) !important;
-  border: 1px solid var(--gv-border) !important;
-  color: var(--gv-text) !important;
-  border-radius: var(--gv-radius-sm) !important;
-  padding: 4px 14px !important;
-  height: 32px !important;
-  box-sizing: border-box;
-}
-.button:hover {
-  border-color: var(--gv-accent) !important;
-  color: var(--gv-accent-2) !important;
-}
-.button.button-small {
-  height: auto !important;
-  padding: 2px 10px !important;
-  border-radius: 6px !important;
-}
+.gv-forms-admin .button:hover { border-color: var(--gv-accent) !important; color: white !important; }
+.gv-forms-admin .button.button-small { height: auto !important; padding: 2px 10px !important; border-radius: 6px !important; }
 
 /* === Layout & Preview === */
-.gv-split-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(320px, 420px);
-  gap: 22px;
-}
-.gv-preview-sticky {
-  position: sticky;
-  top: 48px; /* Room for admin bar */
-}
-.gv-preview .gv-card {
+.gv-forms-admin .gv-split-grid { display: grid; grid-template-columns: minmax(0,1fr) minmax(320px,420px); gap: 22px; }
+.gv-forms-admin .gv-preview-sticky { position: sticky; top: 48px; }
+.gv-forms-admin .gv-preview .gv-card {
   background: var(--gv-glass-bg), var(--gv-surface);
   border: 1px solid var(--gv-border);
   border-radius: 14px;
@@ -366,61 +264,73 @@
 }
 
 /* === Embed/Code Section === */
-.gv-card-embed h3 {
-  margin: .5rem 0 .35rem;
-  color: var(--gv-text);
-  font-size: 1em;
+.gv-forms-admin .gv-card-embed h3 { margin: .5rem 0 .35rem; color: var(--gv-text); font-size: 1em; }
+.gv-forms-admin .gv-card-embed p { color: var(--gv-muted); font-size: 0.9em; }
+.gv-forms-admin .gv-code-row { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center; margin: .25rem 0 .75rem; }
+.gv-forms-admin .gv-code {
+  font-family: ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;
+  font-size: 12.5px; padding: 6px 10px; background: #0b1020; color: #cbd5e1;
+  border: 1px solid #1f2937; border-radius: 6px; width: 100%;
 }
-.gv-card-embed p {
-  color: var(--gv-muted);
-  font-size: 0.9em;
-}
-.gv-code-row {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 8px;
-  align-items: center;
-  margin: .25rem 0 .75rem;
-}
-.gv-code {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-size: 12.5px;
-  padding: 6px 10px;
-  background: #0b1020;
-  color: #cbd5e1;
-  border: 1px solid #1f2937;
-  border-radius: 6px;
-  width: 100%;
-}
-.gv-code:read-only {
-  user-select: all;
-}
+.gv-forms-admin .gv-code:read-only { user-select: all; }
 
-/* === Preview Iframe === */
-#gv-live-frame {
-  width: 100%;
-  height: 520px;
-  border: 0;
-  border-radius: 12px;
-  background: #000;
-  display: block;
+/* === Preview Iframe chrome only (does not style inside iframe) === */
+.gv-forms-admin #gv-live-frame {
+  width: 100%; height: 520px; border: 0; border-radius: 12px; background: #000; display: block;
 }
 
 /* --- Misc --- */
-.description {
-  color: var(--gv-muted);
-  font-size: .9em;
-}
-.spinner {
-  filter: invert(1);
-}
+.gv-forms-admin .description { color: var(--gv-muted); font-size: .9em; }
+.gv-forms-admin .spinner { filter: invert(1); }
 
 /* === Responsive === */
 @media (max-width: 1200px) {
-  .gv-split-grid {
-    grid-template-columns: 1fr;
-  }
-  .gv-preview-sticky {
-    position: static;
-  }
+  .gv-forms-admin .gv-split-grid { grid-template-columns: 1fr; }
+  .gv-forms-admin .gv-preview-sticky { position: static; }
+}
+
+.wp-picker-container .wp-color-result.button {
+  margin: 0;
+}
+
+.gv-forms-admin select{
+  background:#0f172a;
+  color:#e5e7eb;
+  border:1px solid #334155;
+  border-radius:8px;
+
+  min-height:34px;
+}
+.gv-forms-admin select:focus{
+  outline:0;
+  border-color:#60a5fa;
+  box-shadow:0 0 0 2px rgba(96,165,250,.25);
+}
+/* WP color picker button parity */
+.gv-forms-admin .wp-picker-container .wp-color-result{
+  background:#0f172a;
+  border-color:#334155;
+  color:#e5e7eb;
+}
+.gv-forms-admin .wp-picker-container .wp-color-result:hover{
+  border-color:#475569;
+}
+/* Dropdown panel (browser-dependent, improves common cases) */
+.gv-forms-admin select option{
+  background:#0b1220;
+  color:#e5e7eb;
+}
+
+
+/* Same height across inputs/selects/color button */
+.gv-forms-admin select,
+.gv-forms-admin input[type=number],
+.gv-forms-admin .wp-picker-container .wp-color-result{
+  height: 34px !important;
+  line-height: 34px;       /* keeps text centered in select */
+}
+
+/* Better select padding so caret is centered */
+.gv-forms-admin select{
+
 }

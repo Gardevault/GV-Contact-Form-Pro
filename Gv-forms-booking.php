@@ -477,7 +477,8 @@ public function form() {
             wp_die( 'Permission denied' );
         }
 
-        $delim = $this->opt( 'csv_delim' ) === ';' ? ';' : ',';
+      $delim = ( $this->opt('csv_delim') === ';' ) ? ';' : ',';
+
 
         header( 'Content-Type: text/csv; charset=utf-8' );
         header( 'Content-Disposition: attachment; filename=gv-messages-' . date( 'Y-m-d' ) . '.csv' );
@@ -533,7 +534,8 @@ public function form() {
 
     /* === LIST-PAGE TWEAKS (CSV btn & hide “Add New”) === */
     public function customize_messages_page() {
-        if ( get_current_screen()->post_type !== self::CPT ) return;
+        $scr = function_exists('get_current_screen') ? get_current_screen() : null;
+    if (!$scr || $scr->post_type !== self::CPT) return;
 
         $url = add_query_arg(
             [
