@@ -1,0 +1,99 @@
+/* === GV Forms — Single Message editor (dark) === */
+body.post-type-gv_message{
+  --gv-bg:#0b1220; --gv-surface:#111a2a; --gv-surface-2:#172335;
+  --gv-text:#e5eef8; --gv-muted:#9fb0c6; --gv-border:#283b54;
+  --gv-accent:#0ea5e9; --gv-accent-2:#38bdf8; --gv-soft:rgba(56,189,248,.18);
+  color:var(--gv-text);
+}
+body.post-type-gv_message #wpbody-content{background:transparent}
+
+/* Title bar */
+body.post-type-gv_message .wrap h1{color:var(--gv-accent);font-weight:800}
+body.post-type-gv_message #titlewrap{background:var(--gv-surface);border:1px solid var(--gv-border);border-radius:12px}
+body.post-type-gv_message #title{
+  background:transparent;border:none;color:var(--gv-text);padding:10px 12px;font-size:1.1rem
+}
+body.post-type-gv_message #title:focus{outline:2px solid transparent;box-shadow:0 0 0 1px var(--gv-accent),0 0 0 4px var(--gv-soft)}
+
+/* Meta boxes */
+body.post-type-gv_message .postbox{
+  background:var(--gv-surface); border:1px solid var(--gv-border); border-radius:12px;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.03)
+}
+body.post-type-gv_message .postbox .hndle{
+  padding:10px 12px; color:#cfe8f8; background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,0)) , var(--gv-surface-2);
+  border-bottom:1px solid var(--gv-border); border-top-left-radius:12px; border-top-right-radius:12px
+}
+body.post-type-gv_message .postbox .inside{padding:12px}
+
+/* Message textarea / editor */
+body.post-type-gv_message .postbox textarea,
+body.post-type-gv_message .wp-editor-area{
+  width:100%; min-height:180px; background:#0b1220; color:var(--gv-text);
+  border:1px solid var(--gv-border); border-radius:10px; padding:10px 12px;
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; line-height:1.5; white-space:pre-wrap
+}
+body.post-type-gv_message .postbox textarea:focus,
+body.post-type-gv_message .wp-editor-area:focus{
+  outline:2px solid transparent; box-shadow:0 0 0 1px var(--gv-accent),0 0 0 4px var(--gv-soft); border-color:var(--gv-accent)
+}
+
+/* Submit box */
+body.post-type-gv_message #submitdiv .handle-actions .handle-order-higher,
+body.post-type-gv_message #submitdiv .handle-actions .handle-order-lower{filter:grayscale(.2)}
+body.post-type-gv_message #submitdiv .inside{padding:0}
+body.post-type-gv_message #submitdiv .misc-pub-section{color:var(--gv-muted);border-color:var(--gv-border)}
+body.post-type-gv_message #submitdiv #major-publishing-actions{
+  background:linear-gradient(180deg, rgba(2,6,23,0), rgba(2,6,23,.9));
+  border-top:1px solid var(--gv-border); padding:10px
+}
+body.post-type-gv_message #submitdiv #publish{
+  border-radius:12px;font-weight:800;background:var(--gv-accent);border:none;color:#fff
+}
+body.post-type-gv_message #submitdiv #publish:hover{background:var(--gv-accent-2);box-shadow:0 0 0 4px var(--gv-soft)}
+
+/* Buttons, inputs */
+body.post-type-gv_message .button{border-radius:10px;border:1px solid var(--gv-border);background:#0b1220;color:var(--gv-text)}
+body.post-type-gv_message .button:hover{border-color:var(--gv-accent);box-shadow:0 0 0 3px var(--gv-soft)}
+body.post-type-gv_message .button-primary{background:var(--gv-accent);border:none}
+body.post-type-gv_message .button-primary:hover{background:var(--gv-accent-2)}
+body.post-type-gv_message input[type="text"], 
+body.post-type-gv_message input[type="search"]{
+  background:#0b1220;color:var(--gv-text);border:1px solid var(--gv-border);border-radius:10px
+}
+
+/* Screen options, help dropdowns */
+body.post-type-gv_message #screen-meta{background:var(--gv-surface);border-color:var(--gv-border);color:var(--gv-text)}
+body.post-type-gv_message #contextual-help-back{background:#0b1220}
+
+/* Minor: move handle icons to blend */
+body.post-type-gv_message .postbox .handle-order-higher, 
+body.post-type-gv_message .postbox .handle-order-lower{opacity:.7}
+
+/* Optional: small utility copy button style */
+body.post-type-gv_message .copy-to-clipboard{margin-left:8px;border-radius:8px;padding:2px 8px}
+
+/* Two-column grid for Sender */
+.gv-msg-grid{
+  display:grid; grid-template-columns: 160px 1fr; gap:6px 12px;
+  background:var(--gv-surface); padding:10px 12px; border-radius:12px;
+  border:1px solid var(--gv-border)
+}
+.gv-msg-grid .lbl{color:#cfe8f8;font-weight:600; margin-right: 1em;}
+.gv-msg-grid .val a{color:var(--gv-accent)}
+.gv-msg-grid .val code{background:#0b1220;border:1px solid var(--gv-border);border-radius:6px;padding:0 6px}
+
+/* Key/Value list in side box */
+.gv-kv{list-style:none;margin:0;padding:0}
+.gv-kv li{display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-bottom:1px dashed rgba(255,255,255,.06)}
+.gv-kv li:last-child{border-bottom:0}
+.gv-kv span{color:var(--gv-muted)}
+.gv-files{list-style:disc;margin:.3rem 0 0 1.1rem;padding:0}
+.gv-sub{margin:.6rem 0 .2rem;color:#cfe8f8}
+
+/* Table for payload */
+.gv-msg-table{border:1px solid var(--gv-border);border-radius:12px;overflow:hidden;background:var(--gv-surface)}
+.gv-msg-table th{width:220px;color:#cfe8f8;background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,0)),var(--gv-surface-2)}
+.gv-msg-table td, .gv-msg-table th{border-color:var(--gv-border)}
+
+#title {    background-color: #111a2a!important;}

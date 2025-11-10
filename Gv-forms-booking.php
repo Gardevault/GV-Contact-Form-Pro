@@ -2,7 +2,7 @@
 /*
 Plugin Name: GV Contact Form Pro
 Description: AJAX contact form with honeypot, reCAPTCHA v3, GDPR-consent, rate-limit, admin options, CSV-export, private CPT storage.
-Version: 0.7.3
+Version: 1.0.1
 Author: Gardevault
 Author URI: https://gardevault.com
 Plugin URI: https://gardevault.com/plugins/gv-simple-2fa
@@ -26,7 +26,7 @@ register_activation_hook( __FILE__, function () {
 class GV_Contact_Form_Pro {
 
     /* === CONSTANTS === */
-    const VERSION     = '0.7.3';
+    const VERSION     = '1.0.1';
     const CPT         = 'gv_message';
     const NONCE_KEY   = 'gv_forms';
     const ACTION      = 'gv_submit_contact';
@@ -52,9 +52,52 @@ class GV_Contact_Form_Pro {
         add_action( 'init',               array( $this, 'register_cpt' ) );
         add_action( 'wp_enqueue_scripts', array( $this, 'assets' ) );
         add_action( 'admin_enqueue_scripts', array( $this, 'admin_assets' ) );
+      add_action('template_redirect', function () {
+  if (isset($_GET['gv-preview'])) {
+    // Prevent toolbar and full theme load
+    show_admin_bar(false);
+    status_header(200);
+    nocache_headers();
+
+    // Minimal environment: load only the needed CSS + form
+    $dir = plugin_dir_url(__FILE__);
+    wp_enqueue_style('gv-forms', $dir . 'assets/gv-forms.css', [], GV_Contact_Form_Pro::VERSION);
+    wp_head();
+
+    echo '<body style="
+      margin:0;
+      background:#000;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      min-height:560px;
+      padding:40px;
+      overflow:hidden;
+    ">';
+    echo '<div style="max-width:580px;width:100%;transform:scale(0.92);transform-origin:top center;">';
+    echo do_shortcode('[gv_contact_form]');
+    echo '</div>';
+    echo '</body>';
+
+    wp_footer();
+    exit;
+  }
+});
+
+
 
         /* Shortcode & AJAX */
         add_shortcode( 'gv_contact_form',             array( $this, 'form' ) );
+        add_shortcode('gv_contact_form_live_preview', function() {
+    $admin = new GV_Contact_Form_Admin();
+    $fields = $admin->get_fields();
+    $title_text  = get_option(GV_Contact_Form_Admin::OPT_TITLE_TEXT, '');
+    $title_align = get_option(GV_Contact_Form_Admin::OPT_TITLE_ALIGN, 'left');
+    $title_color = get_option(GV_Contact_Form_Admin::OPT_TITLE_COLOR, '#ffffff');
+    $label_color = get_option(GV_Contact_Form_Admin::OPT_LABEL_COLOR, '#ffffff');
+    return $admin->render_preview_markup($fields, $title_text, $title_align, $title_color, $label_color);
+});
+
         add_action( 'wp_ajax_'        . self::ACTION, array( $this, 'handle' ) );
         add_action( 'wp_ajax_nopriv_' . self::ACTION, array( $this, 'handle' ) );
 
@@ -91,9 +134,13 @@ add_action('gv_core_register_module', function () {
     'version'     => GV_Contact_Form_Pro::VERSION,
     'settings_url'=> admin_url('admin.php?page=gvforms'), // Builder
     'panel_cb'    => function () {
+        $csv_url = wp_nonce_url(
+      admin_url('admin-post.php?action=gv_forms_export'), // Base URL
+      'gv_forms_export' // The nonce action key
+  );
       echo '<a class="button" href="'.esc_url(admin_url('admin.php?page=gvforms')).'">Open Builder</a> ';
       echo '<a class="button" href="'.esc_url(admin_url('options-general.php?page=gv-contact-settings')).'">Settings</a> ';
-      echo '<a class="button" href="'.esc_url(admin_url('admin-post.php?action=gv_forms_export&_wpnonce=425480984e')).'">Quick CSV Export</a>';
+ echo '<a class="button" href="'.esc_url($csv_url).'">Quick CSV Export</a>';
     },
     'cap'         => 'manage_options',
   ]);
@@ -169,6 +216,8 @@ add_action('gv_core_register_module', function () {
         ) );
     }
 
+    
+
     /* === FRONT-END ASSETS === */
     public function assets() {
         if ( ! is_singular() || ! has_shortcode( get_post()->post_content ?? '', 'gv_contact_form' ) ) return;
@@ -187,6 +236,8 @@ add_action('gv_core_register_module', function () {
 
         // IMPORTANT: Do NOT enqueue Google's reCAPTCHA script here.
         // We rely on gv-forms.js to inject it after user interaction (no PSI impact).
+
+        
     }
 
     public function gv_forms_non_blocking_css( $html, $handle, $href, $media ) {
@@ -227,6 +278,8 @@ add_action('gv_core_register_module', function () {
         <style>
             .gv-form label{color:<?php echo $label_colour; ?>!important}
             .gv-form-title{margin:0 0 1rem;font-size:clamp(1.25rem,2.5vw,1.75rem);line-height:1.2;font-weight:600}
+              .gv-form .gv-consent{display:flex;flex-direction:row;align-items:flex-start;gap:.75rem;margin:.35rem 0 0}
+  .gv-form .gv-consent input[type=checkbox]{margin-top:2px;flex:0 0 22px}
         </style>
 
         <?php if ( $title_text ) : ?>
@@ -261,12 +314,13 @@ add_action('gv_core_register_module', function () {
                 <?php endif;
             endforeach; ?>
 
-            <?php if ( $this->opt( 'gdpr' ) ) : ?>
-                <label class="gv-gdpr">
-                    <input type="checkbox" name="consent" value="1" required>
-                    I consent to having this site store my submitted information.
-                </label>
-            <?php endif; ?>
+<?php if ( $this->opt( 'gdpr' ) ) : ?>
+  <label class="gv-consent checkbox-container">
+    <input type="checkbox" name="consent" value="1" required>
+    <span class="label-text">I consent to having this site store my submitted information.</span>
+  </label>
+<?php endif; ?>
+
 
             <button type="submit">Send</button>
             <?php if ( $recaptcha_key ) : ?>
@@ -567,7 +621,48 @@ add_action('gv_core_register_module', function () {
             </form>
         </div>
     <?php }
-} // END class
+} 
+
+
+
+// END class
+/*───────────────────────────*/
+/* Gutenberg block: GV Contact Form */
+/*───────────────────────────*/
+add_action('init', function () {
+    // Editor script
+    wp_register_script(
+        'gv-contact-form-block',
+        plugins_url('assets/block-contact-form.js', __FILE__),
+        ['wp-blocks','wp-element','wp-i18n','wp-components','wp-block-editor','wp-server-side-render'],
+        GV_Contact_Form_Pro::VERSION,
+        true
+    );
+
+    // Optional tiny editor-side CSS
+    wp_register_style(
+        'gv-contact-form-block',
+        plugins_url('assets/block-contact-form.css', __FILE__),
+        [],
+        GV_Contact_Form_Pro::VERSION
+    );
+
+    register_block_type('gardevault/contact-form', [
+        'api_version'     => 2,
+        'editor_script'   => 'gv-contact-form-block',
+        'editor_style'    => 'gv-contact-form-block',
+        'render_callback' => function () {
+            // Reuse the shortcode so one render path exists
+            return do_shortcode('[gv_contact_form]');
+        },
+        'attributes'      => [],
+        'title'           => 'GV Contact Form',
+        'category'        => 'widgets',
+        'icon'            => 'feedback',
+        'supports'        => ['html' => false],
+        'keywords'        => ['contact','form','gardevault','gv'],
+    ]);
+});
 
 /*───────────────────────────*/
 /* Boot plugin & admin class */

@@ -11,6 +11,7 @@
     box-shadow: 0 24px 166px 0 rgb(0 20 60 / 55%), 0 2px 4px 0 rgba(0,0,0,.05);
     border: 1.2px solid #22293d;
     backdrop-filter: blur(24px) saturate(1.2);
+    webkit-backdrop-filter: blur(24px) saturate(1.2);
     background: #000;
 }
 
@@ -241,3 +242,53 @@
   box-shadow: 0 0 0 1000px #fff inset;   /* match your background */
   caret-color:#0b1220;
 }
+
+/* 1) Scope field labels only (stop hitting the consent label) */
+.gv-form .gv-field > label {
+  display: flex;
+  flex-direction: column;
+  font-weight: 600;
+  gap: 0.4rem;
+  color: #fff;
+  letter-spacing: .01em;
+  margin-bottom: 0.15rem;
+}
+
+/* keep the old rule from matching everything */
+.gv-form label { all: unset; } /* optional: remove if you can't change the old rule */
+
+/* 2) Consent block: logical row layout with multiline text */
+.gv-form .checkbox-container {
+  display: flex;
+  flex-direction: row;          /* horizontal */
+  align-items: flex-start;      /* checkbox aligns with first line of text */
+  gap: 0.75rem;
+  margin: .4rem 0 .2rem 0;
+}
+
+.gv-form .checkbox-container input[type="checkbox"] {
+  appearance: none;
+  width: 22px; height: 22px;
+  flex: 0 0 22px;               /* stable alignment */
+  margin-top: 2px;              /* optical alignment with text */
+  border-radius: 6px;
+  border: 1.5px solid #8aa2be;
+  background: #0f1318;
+  transition: border .22s, box-shadow .18s;
+  position: relative;
+}
+
+/* Optional: wrap long consent text nicely */
+.gv-form .checkbox-container span,
+.gv-form .checkbox-container .label-text {
+  line-height: 1.45;
+  color: #d7e1ef;
+}
+
+/* Mobile spacing */
+@media (max-width: 600px) {
+  .gv-form .checkbox-container { gap: .6rem; }
+}
+
+.gv-block-wrap { padding:8px; }
+.gv-block-wrap .description { margin-top:8px; opacity:.7; font-size:12px; }
