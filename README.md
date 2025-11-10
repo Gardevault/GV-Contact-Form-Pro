@@ -6,6 +6,11 @@ A secure, modular, and performance-optimized AJAX contact form plugin for WordPr
 **GV Contact Form Pro** handles form creation, spam defense, and message storage without external dependencies.  
 Version 2 introduces visual styling controls, live preview, and block-editor support.
 
+<p align="center">
+  <img src="https://raw.githubusercontent.com/Davekrush/GV-Contact-Form-Pro/main/assets/Screenshot_gardevault.eu.png" alt="GV Contact Form Pro Screenshot" width="800">
+</p>
+
+
 ## Key Features
 
 ### 🧩 Form Building
