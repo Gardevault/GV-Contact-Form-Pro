@@ -15,12 +15,19 @@ class GV_Contact_Form_Admin {
     const OPT_LABEL_COLOR = 'gv_forms_label_color';
 
     // Title + visual
-    const OPT_TITLE_TEXT  = 'gv_forms_title_text';
-    const OPT_TITLE_ALIGN = 'gv_forms_title_align';  // left|center|right
-    const OPT_TITLE_COLOR = 'gv_forms_title_color';
-    const OPT_BG_COLOR    = 'gv_forms_bg_color';
-    const OPT_GLASS_BLUR  = 'gv_forms_glass_blur';
-    const OPT_BORDER      = 'gv_forms_border';
+    const OPT_TITLE_TEXT   = 'gv_forms_title_text';
+    const OPT_TITLE_ALIGN  = 'gv_forms_title_align';  // left|center|right
+    const OPT_TITLE_COLOR  = 'gv_forms_title_color';
+    const OPT_BG_COLOR     = 'gv_forms_bg_color';
+    const OPT_GLASS_BLUR   = 'gv_forms_glass_blur';
+    const OPT_BORDER_WIDTH = 'gv_forms_border_width';
+    const OPT_BORDER_STYLE = 'gv_forms_border_style';
+    const OPT_BORDER_COLOR = 'gv_forms_border_color';
+
+    // New 3.0 Style Options
+    const OPT_PADDING       = 'gv_forms_padding';
+    const OPT_BORDER_RADIUS = 'gv_forms_border_radius';
+    const OPT_SHADOW        = 'gv_forms_shadow';
 
     /* -----------------------------
      * Boot
@@ -40,10 +47,10 @@ class GV_Contact_Form_Admin {
 
     /* ---------- Meta boxes ---------- */
     public function add_message_metaboxes() {
-        add_meta_box('gv_msg_sender',  'Sender',    [ $this,'box_sender'   ], 'gv_message', 'normal', 'high');
-        add_meta_box('gv_msg_payload', 'Form Data', [ $this,'box_payload'  ], 'gv_message', 'normal', 'default');
-        add_meta_box('gv_msg_tech',    'Technical', [ $this,'box_technical'], 'gv_message', 'side',   'default');
-        add_meta_box('gv_msg_actions', 'Actions',   [ $this,'box_actions'  ], 'gv_message', 'side',   'high');
+        add_meta_box('gv_msg_sender',  'Sender',      [ $this,'box_sender'   ], 'gv_message', 'normal', 'high');
+        add_meta_box('gv_msg_payload', 'Form Data',   [ $this,'box_payload'  ], 'gv_message', 'normal', 'default');
+        add_meta_box('gv_msg_tech',    'Technical',   [ $this,'box_technical'], 'gv_message', 'side',   'default');
+        add_meta_box('gv_msg_actions', 'Actions',     [ $this,'box_actions'  ], 'gv_message', 'side',   'high');
     }
 
     /* Helpers to extract data safely from meta/content */
@@ -51,16 +58,16 @@ class GV_Contact_Form_Admin {
         $m = function($k,$d=null) use ($post){ $v=get_post_meta($post->ID,$k,true); return $v!==''?$v:$d; };
 
         $out = [
-            'name'     => $m('_gv_name') ?: $m('name'),
-            'email'    => $m('_gv_email') ?: $m('email'),
-            'company'  => $m('_gv_company') ?: $m('company'),
-            'phone'    => $m('_gv_phone') ?: $m('phone'),
-            'ip'       => $m('_gv_ip') ?: $_SERVER['REMOTE_ADDR'] ?? '',
-            'ua'       => $m('_gv_ua'),
-            'referer'  => $m('_gv_referer') ?: $m('referer'),
-            'page'     => $m('_gv_page') ?: $m('page_url'),
-            'score'    => $m('_gv_spam_score'),
-            'honeypot' => $m('_gv_honeypot') ? 'tripped' : '',
+            'name'      => $m('_gv_name') ?: $m('name'),
+            'email'     => $m('_gv_email') ?: $m('email'),
+            'company'   => $m('_gv_company') ?: $m('company'),
+            'phone'     => $m('_gv_phone') ?: $m('phone'),
+            'ip'        => $m('_gv_ip') ?: $_SERVER['REMOTE_ADDR'] ?? '',
+            'ua'        => $m('_gv_ua'),
+            'referer'   => $m('_gv_referer') ?: $m('referer'),
+            'page'      => $m('_gv_page') ?: $m('page_url'),
+            'score'     => $m('_gv_spam_score'),
+            'honeypot'  => $m('_gv_honeypot') ? 'tripped' : '',
             'attachments' => (array) $m('_gv_files', []),
         ];
 
@@ -95,12 +102,12 @@ class GV_Contact_Form_Admin {
     /* ---------- Renderers ---------- */
     public function box_sender(\WP_Post $post) {
         list($d,) = $this->gv_msg_collect($post);
-        $name   = esc_html($d['name'] ?: '(unknown)');
-        $email  = sanitize_email($d['email']);
-        $company= esc_html($d['company'] ?: '');
-        $phone  = esc_html($d['phone'] ?: '');
-        $when   = esc_html(get_the_time('Y-m-d H:i:s', $post));
-        $page   = esc_url($d['page'] ?: $d['referer'] ?: '');
+        $name    = esc_html($d['name'] ?: '(unknown)');
+        $email   = sanitize_email($d['email']);
+        $company = esc_html($d['company'] ?: '');
+        $phone   = esc_html($d['phone'] ?: '');
+        $when    = esc_html(get_the_time('Y-m-d H:i:s', $post));
+        $page    = esc_url($d['page'] ?: $d['referer'] ?: '');
 
         echo '<div class="gv-msg-grid">';
         echo '<div><span class="lbl">Name</span><span class="val">'.$name.'</span></div>';
@@ -293,9 +300,9 @@ class GV_Contact_Form_Admin {
                 'nonce'      => wp_create_nonce('gv_forms_admin'),
                 'fields'     => $this->get_fields(),
                 'title'      => [
-                    'text'  => get_option(self::OPT_TITLE_TEXT,''),
-                    'align' => get_option(self::OPT_TITLE_ALIGN,'left'),
-                    'color' => get_option(self::OPT_TITLE_COLOR,'#ffffff'),
+                    'text'   => get_option(self::OPT_TITLE_TEXT,''),
+                    'align'  => get_option(self::OPT_TITLE_ALIGN,'left'),
+                    'color'  => get_option(self::OPT_TITLE_COLOR,'#ffffff'),
                 ],
                 // provide CSS for the iframe
                 'previewCss' => $frontend_css,
@@ -336,8 +343,6 @@ jQuery(function($){
 });
 JS
 );
-
-
             
         }
 
@@ -348,30 +353,86 @@ JS
         }
     }
 
-    /** Admin-only live preview markup (no submit, no handlers) */
-    public function render_preview_markup(array $fields, string $title_text, string $title_align, string $title_color, string $label_color){
-        ob_start(); ?>
+    /**
+     * Admin-only live preview markup (no submit, no handlers)
+     * FIX: This function is now backward-compatible.
+     */
+    public function render_preview_markup(...$args){
+        ob_start();
 
-<?php
-$bg     = get_option(self::OPT_BG_COLOR, '#000');
-$blur   = get_option(self::OPT_GLASS_BLUR, '20');
-$border = get_option(self::OPT_BORDER, '1') === '1' ? '1.2px solid #22293d' : 'none';
+        $params = [];
 
-// Consent defaults (mirror frontend behavior)
-$gdpr_on   = get_option('gv_forms_gdpr_enable', '1') === '1';
-$gdpr_text = get_option('gv_forms_gdpr_text', 'I consent to having this site store my submitted information.');
+        if (isset($args[0]) && is_array($args[0]) && isset($args[0]['fields'])) {
+            $params = $args[0]; // New AJAX way
+        } else {
+            // Support the old call signature
+            $params['fields']      = $args[0] ?? [];
+            $params['title_text']  = $args[1] ?? '';
+            $params['title_align'] = $args[2] ?? 'left';
+            $params['title_color'] = $args[3] ?? '#ffffff';
+            $params['label_color'] = $args[4] ?? '#ffffff';
+        }
 
-echo '<style>
+        // Extract params with defaults from a central source
+        $defaults = [
+            'fields'        => $this->get_fields(),
+            'title_text'    => get_option(self::OPT_TITLE_TEXT, ''),
+            'title_align'   => get_option(self::OPT_TITLE_ALIGN, 'left'),
+            'title_color'   => get_option(self::OPT_TITLE_COLOR, '#ffffff'),
+            'label_color'   => get_option(self::OPT_LABEL_COLOR, '#ffffff'),
+            'bg_color'      => get_option(self::OPT_BG_COLOR, '#000'),
+            'glass_blur'    => get_option(self::OPT_GLASS_BLUR, '20'),
+            'border_width'  => get_option(self::OPT_BORDER_WIDTH, '1'),
+            'border_style'  => get_option(self::OPT_BORDER_STYLE, 'solid'),
+            'border_color'  => get_option(self::OPT_BORDER_COLOR, '#22293d'),
+            // New 3.0 defaults
+            'padding'       => get_option(self::OPT_PADDING, '2.5'),
+            'border_radius' => get_option(self::OPT_BORDER_RADIUS, '16'),
+            'shadow'        => get_option(self::OPT_SHADOW, '1'),
+        ];
+        
+        $p = wp_parse_args($params, $defaults);
+
+        $fields      = is_array($p['fields']) ? $p['fields'] : $defaults['fields'];
+        $title_text  = (string) $p['title_text'];
+        $title_align = (string) $p['title_align'];
+        $title_color = (string) $p['title_color'];
+        $label_color = (string) $p['label_color'];
+        $bg          = (string) $p['bg_color'];
+        $blur        = (int) $p['glass_blur'];
+        $border_css  = (float)$p['border_width'] > 0
+            ? sprintf('%spx %s %s', esc_attr($p['border_width']), esc_attr($p['border_style']), esc_attr($p['border_color']))
+            : 'none';
+        
+        // New 3.0 styles
+        $padding_rem = (float)$p['padding'];
+        $radius_px   = (int)$p['border_radius'];
+        $shadow_css  = !empty($p['shadow']) ? '0 24px 166px 0 rgb(0 20 60 / 55%), 0 2px 4px 0 rgba(0,0,0,.05)' : 'none';
+
+
+        /* pull from main plugin options so preview matches frontend */
+        $opts      = get_option(GV_Contact_Form_Pro::OPT_KEY, []);
+        $gdpr_on   = !empty($opts['gdpr']);
+        $gdpr_text = $opts['gdpr_text']   ?? 'I consent to having this site store my submitted information.';
+        $submit_tx = $opts['submit_text'] ?? 'Send';
+
+        echo '<style>
+  .gv-form label{color:'.$label_color.'!important}
+  .gv-form-title{margin:0 0 1rem;font-size:clamp(1.25rem,2.5vw,1.75rem);line-height:1.2;font-weight:600}
   .gv-form {
-    background:'.esc_attr($bg).';
-    backdrop-filter:blur('.intval($blur).'px) saturate(1.2);
-    -webkit-backdrop-filter:blur('.intval($blur).'px) saturate(1.2);
-    border:'.esc_attr($border).';
+    background:' . esc_attr($bg) . ' !important;
+    backdrop-filter:blur(' . intval($blur) . 'px) saturate(1.2) !important;
+    -webkit-backdrop-filter:blur(' . intval($blur) . 'px) saturate(1.2) !important;
+    border:' . $border_css . ';
+    padding: ' . $padding_rem . 'rem;
+    border-radius: ' . $radius_px . 'px;
+    box-shadow: ' . $shadow_css . ';
   }
-  .gv-consent{margin:10px 0 14px;color:#cbd5e1;font-size:14px;display:flex;gap:8px;align-items:center}
-  .gv-consent input{accent-color:#0ea5e9}
+  .gv-form .gv-consent{display:flex;flex-direction:row;align-items:flex-start;gap:.75rem;margin:.35rem 0 0}
+  .gv-form .gv-consent input[type=checkbox]{margin-top:2px;flex:0 0 22px}
 </style>';
 ?>
+
 
 <form class="gv-form" data-admin-preview="1" onsubmit="return false">
   <?php if ($title_text !== ''): ?>
@@ -400,16 +461,20 @@ echo '<style>
     </div>
   <?php endforeach; ?>
 
-  <?php if ($gdpr_on): ?>
-    <label class="gv-consent">
-      <input type="checkbox" disabled>
-      <span><?php echo esc_html($gdpr_text); ?></span>
-    </label>
-  <?php endif; ?>
+<?php if ($gdpr_on): ?>
+  <label class="gv-consent">
+    <input type="checkbox" disabled>
+    <span><?php echo esc_html($gdpr_text); ?></span>
+  </label>
+<?php endif; ?>
 
-  <div class="gv-submit">
-    <button type="button" disabled>Submit (preview)</button>
-  </div>
+<div class="gv-submit">
+  <button type="button" disabled><?php echo esc_html($submit_tx . ' (preview)'); ?></button>
+</div>
+
+
+
+
 </form>
 
 <?php
@@ -451,7 +516,6 @@ echo '<style>
           </div>
 
           <div class="gv-split-grid">
-            <!-- LEFT: Editor -->
             <div class="gv-editor">
               <div class="gv-card" style="margin-bottom:12px">
                 <h2>Global styling</h2>
@@ -465,17 +529,48 @@ echo '<style>
                   <label for="gv-bg-color" class="gv-lbl">Background</label>
                   <input id="gv-bg-color" type="text" value="<?php echo esc_attr(get_option(self::OPT_BG_COLOR, '#000000')); ?>">
                 </div>
-
+                
                 <div class="gv-row">
                   <label for="gv-glass-blur" class="gv-lbl">Glassmorphism</label>
                   <input id="gv-glass-blur" type="range" min="0" max="30" step="1"
                          value="<?php echo esc_attr(get_option(self::OPT_GLASS_BLUR, '20')); ?>">
                   <span id="gv-glass-blur-val"><?php echo esc_html(get_option(self::OPT_GLASS_BLUR, '20')); ?>px</span>
                 </div>
-
+                
                 <div class="gv-row">
-                  <label for="gv-border-toggle" class="gv-lbl">Border</label>
-                  <label><input id="gv-border-toggle" type="checkbox" value="1" <?php checked(get_option(self::OPT_BORDER, '1')); ?>> Show border</label>
+                  <label for="gv-padding" class="gv-lbl">Padding</label>
+                  <input id="gv-padding" type="number" min="0" max="5" step="0.1"
+                         value="<?php echo esc_attr(get_option(self::OPT_PADDING, '2.5')); ?>" style="width: 70px;" title="Padding (rem)">
+                  <span class="gv-suffix">rem</span>
+                </div>
+                
+                <div class="gv-row">
+                  <label for="gv-border-radius" class="gv-lbl">Border Radius</label>
+                  <input id="gv-border-radius" type="number" min="0" max="40" step="1"
+                         value="<?php echo esc_attr(get_option(self::OPT_BORDER_RADIUS, '16')); ?>" style="width: 70px;" title="Border Radius (px)">
+                  <span class="gv-suffix">px</span>
+                </div>
+
+                <div class="gv-row" style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                  <label for="gv-border-width" class="gv-lbl" style="flex: 0 0 auto; margin-bottom:0;">Border</label>
+                  <input id="gv-border-width" type="number" min="0" max="10" step="0.5"
+                         value="<?php echo esc_attr(get_option(self::OPT_BORDER_WIDTH, '1')); ?>" style="width: 70px;" title="Border Width (px)">
+                  <select id="gv-border-style" style="width: 90px;" title="Border Style">
+                    <?php
+                    $current_style = get_option(self::OPT_BORDER_STYLE, 'solid');
+                    foreach (['solid', 'dashed', 'dotted', 'double'] as $style): ?>
+                      <option value="<?php echo esc_attr($style); ?>" <?php selected($current_style, $style); ?>>
+                        <?php echo esc_html(ucfirst($style)); ?>
+                      </option>
+                    <?php endforeach; ?>
+                  </select>
+                  <input id="gv-border-color" type="text"
+                         value="<?php echo esc_attr(get_option(self::OPT_BORDER_COLOR, '#22293d')); ?>" title="Border Color">
+                </div>
+                
+                <div class="gv-row">
+                  <label for="gv-shadow-toggle" class="gv-lbl">3D Shadow</label>
+                  <label><input id="gv-shadow-toggle" type="checkbox" value="1" <?php checked(get_option(self::OPT_SHADOW, '1')); ?>> Enable Shadow</label>
                 </div>
 
                 <div class="gv-form-title-controls">
@@ -535,15 +630,14 @@ echo '<style>
 
             
 
-    <!-- RIGHT: Sidebar -->
-<aside class="gv-preview">
+    <aside class="gv-preview">
   <div class="gv-preview-sticky">
 
 
 
     <div class="gv-card">
       <h2>Live preview</h2>
-      <iframe id="gv-live-frame"></iframe>
+      <iframe id="gv-live-frame" style="width:100%; min-height:550px; border:none;" scrolling="no"></iframe>
     </div>
     <p class="description" style="margin-top:8px">Preview updates as you type, sort, toggle required, or change colors.</p>
   </div>
@@ -591,25 +685,58 @@ echo '<style>
         $title_color = sanitize_hex_color($_POST['title_color'] ?? '#ffffff') ?: '#ffffff';
         $bg_color    = sanitize_hex_color($_POST['bg_color'] ?? '#000000') ?: '#000000';
         $glass_blur  = max(0,min(30,intval($_POST['glass_blur'] ?? 20)));
-        $border      = !empty($_POST['border']) ? '1' : '0';
+        
+        $border_width = max(0, min(10, (float)($_POST['border_width'] ?? 1)));
+        $border_style = sanitize_key($_POST['border_style'] ?? 'solid');
+        if (!in_array($border_style, ['solid', 'dashed', 'dotted', 'double'])) {
+            $border_style = 'solid';
+        }
+        $border_color = sanitize_hex_color($_POST['border_color'] ?? '#22293d') ?: '#22293d';
+
+        // New 3.0 options
+        $padding       = max(0, min(5, (float)($_POST['padding'] ?? 2.5)));
+        $border_radius = max(0, min(40, (int)($_POST['border_radius'] ?? 16)));
+        $shadow        = !empty($_POST['shadow']) ? '1' : '0';
 
         // Preview only → render, do not persist
         if ( isset($_POST['preview_only']) ) {
+            
+            $preview_params = [
+                'fields'        => $clean,
+                'title_text'    => $title_text,
+                'title_align'   => $title_align,
+                'title_color'   => $title_color,
+                'label_color'   => $label_color,
+                'bg_color'      => $bg_color,
+                'glass_blur'    => $glass_blur,
+                'border_width'  => $border_width,
+                'border_style'  => $border_style,
+                'border_color'  => $border_color,
+                'padding'       => $padding,
+                'border_radius' => $border_radius,
+                'shadow'        => $shadow,
+            ];
+            
             ob_start();
-            echo $this->render_preview_markup($clean,$title_text,$title_align,$title_color,$label_color);
+            echo $this->render_preview_markup($preview_params); // Pass all params
             $html = ob_get_clean();
             wp_send_json_success(['html'=>$html]);
         }
 
         // Persist
-        update_option(self::OPT_FIELDS,     $clean,       false);
-        update_option(self::OPT_LABEL_COLOR,$label_color, false);
-        update_option(self::OPT_TITLE_TEXT, $title_text,  false);
-        update_option(self::OPT_TITLE_ALIGN,$title_align, false);
-        update_option(self::OPT_TITLE_COLOR,$title_color, false);
-        update_option(self::OPT_BG_COLOR,   $bg_color,    false);
-        update_option(self::OPT_GLASS_BLUR, $glass_blur,  false);
-        update_option(self::OPT_BORDER,     $border,      false);
+        update_option(self::OPT_FIELDS,       $clean,        false);
+        update_option(self::OPT_LABEL_COLOR,  $label_color,  false);
+        update_option(self::OPT_TITLE_TEXT,   $title_text,   false);
+        update_option(self::OPT_TITLE_ALIGN,  $title_align,  false);
+        update_option(self::OPT_TITLE_COLOR,  $title_color,  false);
+        update_option(self::OPT_BG_COLOR,     $bg_color,     false);
+        update_option(self::OPT_GLASS_BLUR,   $glass_blur,   false);
+        update_option(self::OPT_BORDER_WIDTH, $border_width, false);
+        update_option(self::OPT_BORDER_STYLE, $border_style, false);
+        update_option(self::OPT_BORDER_COLOR, $border_color, false);
+        update_option(self::OPT_PADDING,      $padding,      false);
+        update_option(self::OPT_BORDER_RADIUS,$border_radius, false);
+        update_option(self::OPT_SHADOW,       $shadow,       false);
 
         wp_send_json_success(['ok'=>1]);
     }

@@ -2,14 +2,11 @@
 /*
 Plugin Name: GV Contact Form Pro
 Description: AJAX contact form with honeypot, reCAPTCHA v3, GDPR-consent, rate-limit, admin options, CSV-export, private CPT storage.
-Version: 1.0.1
+Version: 0.7.3
 Author: Gardevault
 Author URI: https://gardevault.com
 Plugin URI: https://gardevault.com/plugins/gv-simple-2fa
 */
-
-
-
 
 if ( ! defined( 'ABSPATH' ) ) exit;
 
@@ -26,7 +23,7 @@ register_activation_hook( __FILE__, function () {
 class GV_Contact_Form_Pro {
 
     /* === CONSTANTS === */
-    const VERSION     = '1.0.1';
+    const VERSION     = '0.7.3';
     const CPT         = 'gv_message';
     const NONCE_KEY   = 'gv_forms';
     const ACTION      = 'gv_submit_contact';
@@ -34,22 +31,24 @@ class GV_Contact_Form_Pro {
     const CSV_ACTION  = 'gv_forms_export';
 
     /* === DEFAULT OPTIONS === */
-    private $defaults = array(
-        'admin_email'       => '',
-        'rate_limit'        => 5,
-        'csv_delim'         => ',',
-        'auto_reply'        => 1,
-        'gdpr'              => 1,
-        'recaptcha_enabled' => 1,
-        'recaptcha_key'     => '',
-        'recaptcha_secret'  => '',
-    );
+private $defaults = array(
+  'admin_email' => '',
+  'rate_limit'  => 5,
+  'csv_delim'   => ',',
+  'auto_reply'  => 1,
+  'gdpr'        => 1,
+  'recaptcha_enabled' => 1,
+  'recaptcha_key'     => '',
+  'recaptcha_secret'  => '',
+  'gdpr_text'   => 'I consent to having this site store my submitted information.',
+  'submit_text' => 'Send',
+);
 
     /* === BOOT === */
     public function __construct() {
 
         /* Core */
-        add_action( 'init',               array( $this, 'register_cpt' ) );
+        add_action( 'init',                 array( $this, 'register_cpt' ) );
         add_action( 'wp_enqueue_scripts', array( $this, 'assets' ) );
         add_action( 'admin_enqueue_scripts', array( $this, 'admin_assets' ) );
       add_action('template_redirect', function () {
@@ -87,9 +86,11 @@ class GV_Contact_Form_Pro {
 
 
         /* Shortcode & AJAX */
-        add_shortcode( 'gv_contact_form',             array( $this, 'form' ) );
+        add_shortcode( 'gv_contact_form',                array( $this, 'form' ) );
         add_shortcode('gv_contact_form_live_preview', function() {
     $admin = new GV_Contact_Form_Admin();
+    // This preview shortcode is only for the Gutenberg block, which needs the old signature
+    // The main live preview is handled by render_preview_markup() via AJAX
     $fields = $admin->get_fields();
     $title_text  = get_option(GV_Contact_Form_Admin::OPT_TITLE_TEXT, '');
     $title_align = get_option(GV_Contact_Form_Admin::OPT_TITLE_ALIGN, 'left');
@@ -102,7 +103,7 @@ class GV_Contact_Form_Pro {
         add_action( 'wp_ajax_nopriv_' . self::ACTION, array( $this, 'handle' ) );
 
         /* Admin list UI */
-        add_filter( 'manage_edit-' . self::CPT . '_columns',            array( $this, 'cols' ) );
+        add_filter( 'manage_edit-' . self::CPT . '_columns',              array( $this, 'cols' ) );
         add_action( 'manage_'      . self::CPT . '_posts_custom_column', array( $this, 'col_content' ), 10, 2 );
         add_action( 'add_meta_boxes',   array( $this, 'metabox' ) );
         add_action( 'admin_head',       array( $this, 'remove_publish_box' ) );
@@ -140,7 +141,7 @@ add_action('gv_core_register_module', function () {
   );
       echo '<a class="button" href="'.esc_url(admin_url('admin.php?page=gvforms')).'">Open Builder</a> ';
       echo '<a class="button" href="'.esc_url(admin_url('options-general.php?page=gv-contact-settings')).'">Settings</a> ';
- echo '<a class="button" href="'.esc_url($csv_url).'">Quick CSV Export</a>';
+  echo '<a class="button" href="'.esc_url($csv_url).'">Quick CSV Export</a>';
     },
     'cap'         => 'manage_options',
   ]);
@@ -260,76 +261,93 @@ add_action('gv_core_register_module', function () {
     }
 
     /* === SHORTCODE RENDER === */
-    public function form() {
-        $fields        = class_exists( 'GV_Contact_Form_Admin' )
-                         ? ( new GV_Contact_Form_Admin )->get_fields()
-                         : array();
+public function form() {
+    $fields          = class_exists('GV_Contact_Form_Admin')
+                        ? (new GV_Contact_Form_Admin)->get_fields()
+                        : array();
 
-        $label_colour  = esc_attr( get_option( 'gv_forms_label_color', '#ffffff' ) );
-        $recaptcha_key = ( $this->opt( 'recaptcha_enabled' ) && $this->opt( 'recaptcha_key' ) )
-                         ? $this->opt( 'recaptcha_key' ) : '';
+    // --- visual from Builder ---
+    $bg           = get_option(GV_Contact_Form_Admin::OPT_BG_COLOR, '#000000');
+    $blur         = (int) get_option(GV_Contact_Form_Admin::OPT_GLASS_BLUR, 20);
+    $border_width = get_option(GV_Contact_Form_Admin::OPT_BORDER_WIDTH, '1');
+    $border_style = get_option(GV_Contact_Form_Admin::OPT_BORDER_STYLE, 'solid');
+    $border_color = get_option(GV_Contact_Form_Admin::OPT_BORDER_COLOR, '#22293d');
+    
+    // New 3.0 options
+    $padding = (float) get_option(GV_Contact_Form_Admin::OPT_PADDING, '2.5');
+    $radius  = (int) get_option(GV_Contact_Form_Admin::OPT_BORDER_RADIUS, '16');
+    $shadow_on = get_option(GV_Contact_Form_Admin::OPT_SHADOW, '1') === '1';
 
-        // Title settings
-        $title_text  = get_option( 'gv_forms_title_text', '' );
-        $title_align = get_option( 'gv_forms_title_align', 'left' );
-        $title_color = get_option( 'gv_forms_title_color', '#ffffff' );
+    $border_css   = (float)$border_width > 0
+        ? sprintf('%spx %s %s', esc_attr($border_width), esc_attr($border_style), esc_attr($border_color))
+        : 'none';
+    $shadow_css   = $shadow_on 
+        ? '0 24px 166px 0 rgb(0 20 60 / 55%), 0 2px 4px 0 rgba(0,0,0,.05)' 
+        : 'none';
 
-        ob_start(); ?>
-        <style>
-            .gv-form label{color:<?php echo $label_colour; ?>!important}
-            .gv-form-title{margin:0 0 1rem;font-size:clamp(1.25rem,2.5vw,1.75rem);line-height:1.2;font-weight:600}
-              .gv-form .gv-consent{display:flex;flex-direction:row;align-items:flex-start;gap:.75rem;margin:.35rem 0 0}
-  .gv-form .gv-consent input[type=checkbox]{margin-top:2px;flex:0 0 22px}
-        </style>
+    // --- labels + i18n from settings ---
+    $label_colour  = esc_attr( get_option('gv_forms_label_color', '#ffffff') );
+    $recaptcha_key = ($this->opt('recaptcha_enabled') && $this->opt('recaptcha_key')) ? $this->opt('recaptcha_key') : '';
 
-        <?php if ( $title_text ) : ?>
-            <h3 class="gv-form-title"
-                style="text-align:<?php echo esc_attr( $title_align ); ?>;color:<?php echo esc_attr( $title_color ); ?>">
-                <?php echo esc_html( $title_text ); ?>
-            </h3>
+    $title_text  = get_option('gv_forms_title_text',  '');
+    $title_align = get_option('gv_forms_title_align', 'left');
+    $title_color = get_option('gv_forms_title_color', '#ffffff');
+
+    $gdpr_on   = (int) $this->opt('gdpr') === 1;
+    $gdpr_text = $this->opt('gdpr_text') ?: 'I consent to having this site store my submitted information.';
+    $submit_tx = $this->opt('submit_text') ?: 'Send';
+
+    ob_start(); ?>
+    <style>
+      .gv-form label{color:<?php echo $label_colour; ?>!important}
+      .gv-form-title{margin:0 0 1rem;font-size:clamp(1.25rem,2.5vw,1.75rem);line-height:1.2;font-weight:600}
+      .gv-form{
+          background:<?php echo esc_attr($bg); ?>;
+          border:<?php echo $border_css; ?>;
+          backdrop-filter:blur(<?php echo (int)$blur; ?>px) saturate(1.2);
+          -webkit-backdrop-filter:blur(<?php echo (int)$blur; ?>px) saturate(1.2);
+          padding: <?php echo $padding; ?>rem;
+          border-radius: <?php echo $radius; ?>px;
+          box-shadow: <?php echo $shadow_css; ?>;
+      }
+      .gv-form .gv-consent{display:flex;flex-direction:row;align-items:flex-start;gap:.75rem;margin:.35rem 0 0}
+      .gv-form .gv-consent input[type=checkbox]{margin-top:2px;flex:0 0 22px}
+    </style>
+    <?php if ($title_text) : ?>
+      <h3 class="gv-form-title" style="text-align:<?php echo esc_attr($title_align); ?>;color:<?php echo esc_attr($title_color); ?>">
+        <?php echo esc_html($title_text); ?>
+      </h3>
+    <?php endif; ?>
+
+    <form class="gv-form" data-action="<?php echo esc_attr(self::ACTION); ?>" data-recaptcha-key="<?php echo esc_attr($recaptcha_key); ?>">
+      <?php wp_nonce_field(self::NONCE_KEY, 'gv_nonce'); ?>
+      <input type="text" name="hp" style="display:none" tabindex="-1" autocomplete="off">
+      <?php if ($recaptcha_key): ?><input type="hidden" name="recaptcha_token" value=""><?php endif; ?>
+
+      <?php foreach ($fields as $f):
+            $slug = esc_attr($f['slug']); $lbl = esc_html($f['label']); $req = $f['required'] ? 'required' : '';
+            $ph = esc_attr($f['placeholder'] ?? ''); ?>
+        <?php if ($f['type'] === 'textarea'): ?>
+          <label><?php echo $lbl; ?><textarea name="<?php echo $slug; ?>" <?php echo $req; ?> placeholder="<?php echo $ph; ?>"></textarea></label>
+        <?php else: $type = in_array($f['type'], ['email','text'], true) ? $f['type'] : 'text'; ?>
+          <label><?php echo $lbl; ?><input type="<?php echo $type; ?>" name="<?php echo $slug; ?>" <?php echo $req; ?> placeholder="<?php echo $ph; ?>"></label>
         <?php endif; ?>
+      <?php endforeach; ?>
 
-        <form class="gv-form"
-              data-action="<?php echo esc_attr( self::ACTION ); ?>"
-              data-recaptcha-key="<?php echo esc_attr( $recaptcha_key ); ?>">
-            <?php wp_nonce_field( self::NONCE_KEY, 'gv_nonce' ); ?>
-            <input type="text" name="hp" style="display:none" tabindex="-1" autocomplete="off">
-            <?php if ( $recaptcha_key ) : ?>
-                <input type="hidden" name="recaptcha_token" value="">
-            <?php endif; ?>
-        <?php foreach ( $fields as $f ) :
-                $slug = esc_attr( $f['slug'] );
-                $lbl  = esc_html( $f['label'] );
-                $req  = $f['required'] ? 'required' : '';
-                $ph   = esc_attr( $f['placeholder'] ?? '' );
-                if ( $f['type'] === 'textarea' ) : ?>
-                    <label><?php echo $lbl; ?>
-                        <textarea name="<?php echo $slug; ?>" <?php echo $req; ?> placeholder="<?php echo $ph; ?>"></textarea>
-                    </label>
-                <?php else :
-                    $type = in_array( $f['type'], array( 'email', 'text' ), true ) ? $f['type'] : 'text'; ?>
-                    <label><?php echo $lbl; ?>
-                        <input type="<?php echo $type; ?>" name="<?php echo $slug; ?>" <?php echo $req; ?> placeholder="<?php echo $ph; ?>">
-                    </label>
-                <?php endif;
-            endforeach; ?>
+      <?php if ($gdpr_on): ?>
+        <label class="gv-consent checkbox-container">
+          <input type="checkbox" name="consent" value="1" required>
+          <span class="label-text"><?php echo esc_html($gdpr_text); ?></span>
+        </label>
+      <?php endif; ?>
 
-<?php if ( $this->opt( 'gdpr' ) ) : ?>
-  <label class="gv-consent checkbox-container">
-    <input type="checkbox" name="consent" value="1" required>
-    <span class="label-text">I consent to having this site store my submitted information.</span>
-  </label>
-<?php endif; ?>
+      <button type="submit"><?php echo esc_html($submit_tx); ?></button>
+      <?php if ($recaptcha_key): ?><small class="gv-recap-note">Protected by reCAPTCHA</small><?php endif; ?>
+      <div class="gv-resp"></div>
+    </form>
+    <?php return ob_get_clean();
+}
 
-
-            <button type="submit">Send</button>
-            <?php if ( $recaptcha_key ) : ?>
-                <small class="gv-recap-note">Protected by reCAPTCHA</small>
-            <?php endif; ?>
-            <div class="gv-resp"></div>
-        </form>
-        <?php return ob_get_clean();
-    }
 
     /* === REQUEST VERIFICATION === */
     private function verify() {
@@ -439,7 +457,7 @@ add_action('gv_core_register_module', function () {
     public function metabox() {
         add_meta_box( 'gv_msg', 'Message', function ( $post ) {
             echo '<pre style="white-space:pre-wrap;font-family:inherit">'
-               . esc_html( $post->post_content ) . '</pre>';
+                 . esc_html( $post->post_content ) . '</pre>';
         }, self::CPT, 'normal', 'high' );
     }
     public function remove_publish_box() {
@@ -468,8 +486,8 @@ add_action('gv_core_register_module', function () {
         $out = fopen( 'php://output', 'w' );
 
         $fields = class_exists( 'GV_Contact_Form_Admin' )
-                ? ( new GV_Contact_Form_Admin )->get_fields()
-                : [];
+            ? ( new GV_Contact_Form_Admin )->get_fields()
+            : [];
 
         $headers = [ 'Date' ];
         $slugs   = [];
@@ -558,13 +576,17 @@ add_action('gv_core_register_module', function () {
         );
     }
     public function register_settings() {
+        add_settings_field('gdpr_text', 'GDPR Text', array($this,'field_gdpr_text'), 'gv-contact-settings', 'gv_main');
+add_settings_field('submit_text', 'Submit Button Text', array($this,'field_submit_text'), 'gv-contact-settings', 'gv_main');
+
+
         register_setting( 'gv_contact_grp', self::OPT_KEY );
         add_filter( 'pre_update_option_' . self::OPT_KEY, function ( $value, $old_value ) {
             if ( ! isset( $value['recaptcha_enabled'] ) ) {
                 $value['recaptcha_enabled'] = 0;
             }
             return $value;
-        }, 10, 2 );
+        }, 10, 2 ); 
 
         add_settings_section( 'gv_main', 'Main', null, 'gv-contact-settings' );
 
@@ -576,6 +598,16 @@ add_action('gv_core_register_module', function () {
         add_settings_field( 'recaptcha_enabled', 'reCAPTCHA', array( $this, 'field_recaptcha_enable' ), 'gv-contact-settings', 'gv_main' );
         add_settings_field( 'recaptcha',   'reCAPTCHA Site/Secret', array( $this, 'field_recaptcha' ), 'gv-contact-settings', 'gv_main' );
     }
+
+    public function field_gdpr_text() {
+  printf('<input type="text" name="%s[gdpr_text]" value="%s" class="regular-text" placeholder="Consent text">',
+         esc_attr(self::OPT_KEY), esc_attr($this->opt('gdpr_text')));
+}
+public function field_submit_text() {
+  printf('<input type="text" name="%s[submit_text]" value="%s" class="regular-text" placeholder="Send">',
+         esc_attr(self::OPT_KEY), esc_attr($this->opt('submit_text')));
+}
+
 
     /* === FIELD RENDERERS === */
     public function field_admin_email() {

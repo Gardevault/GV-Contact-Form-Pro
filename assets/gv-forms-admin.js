@@ -14,11 +14,26 @@
   let dirty = false;
   const markDirty = () => (dirty = true);
 
+  // Debounce the preview function to avoid hammering the server
+  let previewTimeout;
+  function triggerPreview(){
+    markDirty();
+    clearTimeout(previewTimeout);
+    previewTimeout = setTimeout(requestPreview, 150); // 150ms debounce
+  }
+
   // ---------- color pickers + title ----------
-  const $labelColor = $("#gv-label-color").wpColorPicker();
+  const pickerOptions = {
+    change: triggerPreview
+  };
+
+  const $labelColor = $("#gv-label-color").wpColorPicker(pickerOptions);
+  $("#gv-bg-color").wpColorPicker(pickerOptions);
+  $("#gv-border-color").wpColorPicker(pickerOptions);
+  $("#gv-title-color").wpColorPicker(pickerOptions);
+
   const $titleText  = $("#gv-title-text");
   const $titleAlign = $("#gv-title-align");
-  $("#gv-title-color").wpColorPicker();
 
   if (window.gvFormsAdmin && gvFormsAdmin.title) {
     if (gvFormsAdmin.title.text != null) $titleText.val(gvFormsAdmin.title.text);
@@ -33,12 +48,7 @@
     const a = $(this).data("align");
     $titleAlign.val(a);
     $(this).addClass("button-primary").siblings(".gv-align").removeClass("button-primary");
-    markDirty();
     triggerPreview();
-  });
-
-  $("#gv-title-text, #gv-title-color, #gv-label-color").on("change input", function(){
-    markDirty(); triggerPreview();
   });
 
   // ---------- field list ----------
@@ -65,18 +75,16 @@
   const renderList = () => $list.html(fields.map(rowTpl).join(""));
   renderList();
 
-  $list.on("input change", "input, select", function(){ markDirty(); triggerPreview(); });
-
   $list.sortable({
     handle: ".drag-handle",
     placeholder: "gv-field-placeholder",
     start(e, ui){ ui.placeholder.height(ui.helper.outerHeight()); },
-    update(){ markDirty(); triggerPreview(); }
+    update(){ triggerPreview(); }
   });
 
-  $("#gv-add").on("click", () => { fields.push(defaultField()); renderList(); markDirty(); triggerPreview(); });
+  $("#gv-add").on("click", () => { fields.push(defaultField()); renderList(); triggerPreview(); });
 
-  $list.on("click", ".remove", function () { $(this).closest(".gv-field").remove(); markDirty(); triggerPreview(); });
+  $list.on("click", ".remove", function () { $(this).closest(".gv-field").remove(); triggerPreview(); });
 
   // auto-slug
   $list.on("input", ".label", function () {
@@ -122,7 +130,17 @@
       action:"gv_save_fields",
       nonce: gvFormsAdmin.nonce,
       fields: JSON.stringify(fields),
+      // Global Styles
       label_color: $labelColor.val(),
+      bg_color:     $("#gv-bg-color").val(),
+      glass_blur:   $("#gv-glass-blur").val(),
+      padding:      $("#gv-padding").val(),
+      border_radius:$("#gv-border-radius").val(),
+      border_width: $("#gv-border-width").val(),
+      border_style: $("#gv-border-style").val(),
+      border_color: $("#gv-border-color").val(),
+      shadow:       $("#gv-shadow-toggle").is(":checked") ? "1" : "0",
+      // Title
       title_text : $titleText.val().trim(),
       title_align: $titleAlign.val(),
       title_color: $("#gv-title-color").val()
@@ -149,13 +167,20 @@
   function payload(){
     return {
       fields: JSON.stringify(readFields()),
+      // Global Styles
       label_color: $("#gv-label-color").val(),
-      bg_color:    $("#gv-bg-color").val(),
-      glass_blur:  $("#gv-glass-blur").val(),
-      border:      $("#gv-border-toggle").is(":checked") ? "1" : "0",
-      title_text:  $("#gv-title-text").val(),
-      title_color: $("#gv-title-color").val(),
-      title_align: $("#gv-title-align").val()
+      bg_color:     $("#gv-bg-color").val(),
+      glass_blur:   $("#gv-glass-blur").val(),
+      padding:      $("#gv-padding").val(),
+      border_radius:$("#gv-border-radius").val(),
+      border_width: $("#gv-border-width").val(),
+      border_style: $("#gv-border-style").val(),
+      border_color: $("#gv-border-color").val(),
+      shadow:       $("#gv-shadow-toggle").is(":checked") ? "1" : "0",
+      // Title
+      title_text:   $("#gv-title-text").val(),
+      title_color:  $("#gv-title-color").val(),
+      title_align:  $("#gv-title-align").val()
     };
   }
 
@@ -181,8 +206,6 @@ try{
       function(res){ if(res?.success && res.data?.html) paintIframe(res.data.html); });
   }
 
-  function triggerPreview(){ requestPreview(); }
-
   // adjust iframe height based on child message
   window.addEventListener("message", (ev) => {
     if (!ev?.data || ev.data.type !== "gvPreviewHeight") return;
@@ -192,11 +215,15 @@ try{
 
   // wire changes → preview
   $(document).on("input change",
-    "#gv-label-color, #gv-bg-color, #gv-glass-blur, #gv-border-toggle," +
-    " #gv-title-text, #gv-title-color, #gv-title-align," +
-    " #gv-field-list input, #gv-field-list select",
+    "#gv-glass-blur," +
+    " #gv-title-text, #gv-title-align," +
+    " #gv-field-list input, #gv-field-list select," +
+    " #gv-padding, #gv-border-radius, #gv-shadow-toggle," + // New 3.0 fields
+    " #gv-border-width, #gv-border-style",
     triggerPreview
   );
+  
+  // Color pickers are handled by the 'change' event in pickerOptions
 
   // initial paint
   $(triggerPreview);
